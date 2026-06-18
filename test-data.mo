@@ -37,6 +37,14 @@ shared (msg) actor class() {
 
   let _ = { field = field };
   let _ = { var dontPun = dontPun };
+
+  // func-fields (moc #6184) — must parse cleanly (no ERROR nodes)
+  let _ = {
+    func incr(x : Nat) : Nat = x + 1;
+    func double(n : Nat) : Nat { n + n };
+    plain = 5;
+  };
+  let _ = { base with func triple(n : Nat) : Nat = n * 3 };
   let _ = switch _ {
     case (false) {};
     case (true) {};
