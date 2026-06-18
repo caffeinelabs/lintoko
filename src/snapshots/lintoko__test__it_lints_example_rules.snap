@@ -154,205 +154,241 @@ expression: lint_output
  39 │   let _ = { var dontPun = dontPun };
     ╰────
 
-  × [ERROR]: no-bool-switch
-    ╭─[backend/main.mo:40:11]
- 39 │       let _ = { var dontPun = dontPun };
- 40 │ ╭─▶   let _ = switch _ {
- 41 │ │       case (false) {};
- 42 │ │       case (true) {};
- 43 │ ├─▶   };
-    · ╰──── Don't switch on boolean values, use if instead
- 44 │       let _ = switch _ {
+  ⚠ [WARNING]: func-field-sugar
+    ╭─[backend/main.mo:51:5]
+ 50 │   let _ = {
+ 51 │     encode = func(x : Nat) : Nat = x * 2;        // plain expr  → func-field-sugar
+    ·     ──────────────────┬─────────────────
+    ·                       ╰── Prefer func-field sugar: `encode = func(...) = e` → `func encode(...) = e`
+ 52 │     reduce = func(n : Nat) : Nat { n + n };      // block body  → func-field-sugar-block
+    ╰────
+
+  ⚠ [WARNING]: func-field-sugar-block
+    ╭─[backend/main.mo:52:5]
+ 51 │     encode = func(x : Nat) : Nat = x * 2;        // plain expr  → func-field-sugar
+ 52 │     reduce = func(n : Nat) : Nat { n + n };      // block body  → func-field-sugar-block
+    ·     ───────────────────┬──────────────────
+    ·                        ╰── Prefer func-field sugar: `reduce = func(...) { .. }` → `func reduce(...) { .. }`
+ 53 │     ident = func<T>(x : T) : T = x;              // generic     → func-field-sugar-generic
+    ╰────
+
+  ⚠ [WARNING]: func-field-sugar-generic
+    ╭─[backend/main.mo:53:5]
+ 52 │     reduce = func(n : Nat) : Nat { n + n };      // block body  → func-field-sugar-block
+ 53 │     ident = func<T>(x : T) : T = x;              // generic     → func-field-sugar-generic
+    ·     ───────────────┬──────────────
+    ·                    ╰── Prefer func-field sugar: `ident = func<..>(...) = e` → `func ident<..>(...) = e`
+ 54 │     fetch = func() : async* Nat = async* { 0 };  // async*      → func-field-sugar (transparent)
+    ╰────
+
+  ⚠ [WARNING]: func-field-sugar
+    ╭─[backend/main.mo:54:5]
+ 53 │     ident = func<T>(x : T) : T = x;              // generic     → func-field-sugar-generic
+ 54 │     fetch = func() : async* Nat = async* { 0 };  // async*      → func-field-sugar (transparent)
+    ·     ─────────────────────┬────────────────────
+    ·                          ╰── Prefer func-field sugar: `fetch = func(...) = e` → `func fetch(...) = e`
+ 55 │   };
     ╰────
 
   × [ERROR]: no-bool-switch
-    ╭─[backend/main.mo:44:11]
- 43 │       };
- 44 │ ╭─▶   let _ = switch _ {
- 45 │ │       case true {};
- 46 │ │       case false {};
- 47 │ ├─▶   };
+    ╭─[backend/main.mo:56:11]
+ 55 │       };
+ 56 │ ╭─▶   let _ = switch _ {
+ 57 │ │       case (false) {};
+ 58 │ │       case (true) {};
+ 59 │ ├─▶   };
     · ╰──── Don't switch on boolean values, use if instead
- 48 │     
+ 60 │       let _ = switch _ {
+    ╰────
+
+  × [ERROR]: no-bool-switch
+    ╭─[backend/main.mo:60:11]
+ 59 │       };
+ 60 │ ╭─▶   let _ = switch _ {
+ 61 │ │       case true {};
+ 62 │ │       case false {};
+ 63 │ ├─▶   };
+    · ╰──── Don't switch on boolean values, use if instead
+ 64 │     
     ╰────
 
   × [ERROR]: only-return-primitives
-    ╭─[backend/main.mo:54:47]
- 53 │ 
- 54 │   public func listReturningFunction() : async List<Text> {
+    ╭─[backend/main.mo:70:47]
+ 69 │ 
+ 70 │   public func listReturningFunction() : async List<Text> {
     ·                                               ─────┬────
     ·                                                    ╰── Only return primitive types from publicly exposed endpoints
- 55 │     null
+ 71 │     null
     ╰────
 
   × [ERROR]: only-return-primitives
-    ╭─[backend/main.mo:57:46]
- 56 │   };
- 57 │   public func setReturningFunction() : async Set.Set<Text> {
+    ╭─[backend/main.mo:73:46]
+ 72 │   };
+ 73 │   public func setReturningFunction() : async Set.Set<Text> {
     ·                                              ──────┬──────
     ·                                                    ╰── Only return primitive types from publicly exposed endpoints
- 58 │     null
+ 74 │     null
     ╰────
 
   × [ERROR]: only-return-primitives
-    ╭─[backend/main.mo:60:46]
- 59 │   };
- 60 │   public func mapReturningFunction() : async Map.Map<Text, Nat> {
+    ╭─[backend/main.mo:76:46]
+ 75 │   };
+ 76 │   public func mapReturningFunction() : async Map.Map<Text, Nat> {
     ·                                              ─────────┬────────
     ·                                                       ╰── Only return primitive types from publicly exposed endpoints
- 61 │     null
+ 77 │     null
     ╰────
 
   ⚠ [WARNING]: unneeded-return
-    ╭─[backend/main.mo:73:5]
- 72 │   func unneededReturn() {
- 73 │     return 10
+    ╭─[backend/main.mo:89:5]
+ 88 │   func unneededReturn() {
+ 89 │     return 10
     ·     ────┬────
     ·         ╰── unneeded return statement. You can remove the `return`
- 74 │   };
+ 90 │   };
     ╰────
 
   ⚠ [WARNING]: unneeded-return
-    ╭─[backend/main.mo:75:27]
- 74 │   };
- 75 │   func unneededReturn() = return 10;
+    ╭─[backend/main.mo:91:27]
+ 90 │   };
+ 91 │   func unneededReturn() = return 10;
     ·                           ────┬────
     ·                               ╰── unneeded return statement. You can remove the `return`
- 76 │ 
+ 92 │ 
     ╰────
 
   ⚠ [WARNING]: unneeded-return
-    ╭─[backend/main.mo:79:7]
- 78 │     if (true) {
- 79 │       return 4;
+    ╭─[backend/main.mo:95:7]
+ 94 │     if (true) {
+ 95 │       return 4;
     ·       ────┬───
     ·           ╰── unneeded return statement. You can remove the `return`
- 80 │     } else {
+ 96 │     } else {
     ╰────
 
   ⚠ [WARNING]: unneeded-return
-    ╭─[backend/main.mo:86:15]
- 85 │   func unneededReturn() {
- 86 │     if (true) return 4
-    ·               ────┬───
-    ·                   ╰── unneeded return statement. You can remove the `return`
- 87 │     else {
-    ╰────
+     ╭─[backend/main.mo:102:15]
+ 101 │   func unneededReturn() {
+ 102 │     if (true) return 4
+     ·               ────┬───
+     ·                   ╰── unneeded return statement. You can remove the `return`
+ 103 │     else {
+     ╰────
 
   ⚠ [WARNING]: unneeded-return
-    ╭─[backend/main.mo:95:14]
- 94 │     switch (true) {
- 95 │       case 1 return 40;
-    ·              ────┬────
-    ·                  ╰── unneeded return statement. You can remove the `return`
- 96 │       case 2 { return 40; };
-    ╰────
+     ╭─[backend/main.mo:111:14]
+ 110 │     switch (true) {
+ 111 │       case 1 return 40;
+     ·              ────┬────
+     ·                  ╰── unneeded return statement. You can remove the `return`
+ 112 │       case 2 { return 40; };
+     ╰────
 
   ⚠ [WARNING]: unneeded-return
-    ╭─[backend/main.mo:96:16]
- 95 │       case 1 return 40;
- 96 │       case 2 { return 40; };
-    ·                ────┬────
-    ·                    ╰── unneeded return statement. You can remove the `return`
- 97 │     };
-    ╰────
+     ╭─[backend/main.mo:112:16]
+ 111 │       case 1 return 40;
+ 112 │       case 2 { return 40; };
+     ·                ────┬────
+     ·                    ╰── unneeded return statement. You can remove the `return`
+ 113 │     };
+     ╰────
 
   × [ERROR]: case-types
-     ╭─[backend/main.mo:100:8]
-  99 │ 
- 100 │   type lowerCase = Nat;
+     ╭─[backend/main.mo:116:8]
+ 115 │ 
+ 116 │   type lowerCase = Nat;
      ·        ────┬────
      ·            ╰── Types should be capitalized and use CamelCase.
- 101 │   type Snake_case = Nat;
+ 117 │   type Snake_case = Nat;
      ╰────
 
   × [ERROR]: case-types
-     ╭─[backend/main.mo:101:8]
- 100 │   type lowerCase = Nat;
- 101 │   type Snake_case = Nat;
+     ╭─[backend/main.mo:117:8]
+ 116 │   type lowerCase = Nat;
+ 117 │   type Snake_case = Nat;
      ·        ─────┬────
      ·             ╰── Types should be capitalized and use CamelCase.
- 102 │   type CamelCase<lowerCase, Snake_case> = Nat;
+ 118 │   type CamelCase<lowerCase, Snake_case> = Nat;
      ╰────
 
   × [ERROR]: case-types
-     ╭─[backend/main.mo:102:18]
- 101 │   type Snake_case = Nat;
- 102 │   type CamelCase<lowerCase, Snake_case> = Nat;
+     ╭─[backend/main.mo:118:18]
+ 117 │   type Snake_case = Nat;
+ 118 │   type CamelCase<lowerCase, Snake_case> = Nat;
      ·                  ────┬────
      ·                      ╰── Types should be capitalized and use CamelCase.
- 103 │   type CamelCase = Nat;
+ 119 │   type CamelCase = Nat;
      ╰────
 
   × [ERROR]: case-types
-     ╭─[backend/main.mo:102:29]
- 101 │   type Snake_case = Nat;
- 102 │   type CamelCase<lowerCase, Snake_case> = Nat;
+     ╭─[backend/main.mo:118:29]
+ 117 │   type Snake_case = Nat;
+ 118 │   type CamelCase<lowerCase, Snake_case> = Nat;
      ·                             ─────┬────
      ·                                  ╰── Types should be capitalized and use CamelCase.
- 103 │   type CamelCase = Nat;
+ 119 │   type CamelCase = Nat;
      ╰────
 
   × [ERROR]: case-functions
-     ╭─[backend/main.mo:105:8]
- 104 │ 
- 105 │   func UpperCase() {};
+     ╭─[backend/main.mo:121:8]
+ 120 │ 
+ 121 │   func UpperCase() {};
      ·        ────┬────
      ·            ╰── Functions should start lower case and use camelCase.
- 106 │   func snake_case() {};
+ 122 │   func snake_case() {};
      ╰────
 
   × [ERROR]: case-functions
-     ╭─[backend/main.mo:106:8]
- 105 │   func UpperCase() {};
- 106 │   func snake_case() {};
+     ╭─[backend/main.mo:122:8]
+ 121 │   func UpperCase() {};
+ 122 │   func snake_case() {};
      ·        ─────┬────
      ·             ╰── Functions should start lower case and use camelCase.
- 107 │   func _hiddenIsFine() {};
+ 123 │   func _hiddenIsFine() {};
      ╰────
 
   × [ERROR]: case-types
-     ╭─[backend/main.mo:108:9]
- 107 │   func _hiddenIsFine() {};
- 108 │   class lowerCase() {};
+     ╭─[backend/main.mo:124:9]
+ 123 │   func _hiddenIsFine() {};
+ 124 │   class lowerCase() {};
      ·         ────┬────
      ·             ╰── Types should be capitalized and use CamelCase.
- 109 │   class Snake_Cased_ish() {};
+ 125 │   class Snake_Cased_ish() {};
      ╰────
 
   × [ERROR]: case-types
-     ╭─[backend/main.mo:109:9]
- 108 │   class lowerCase() {};
- 109 │   class Snake_Cased_ish() {};
+     ╭─[backend/main.mo:125:9]
+ 124 │   class lowerCase() {};
+ 125 │   class Snake_Cased_ish() {};
      ·         ───────┬───────
      ·                ╰── Types should be capitalized and use CamelCase.
- 110 │   class CamelCase<lowerCase, Snake_case>() {};
+ 126 │   class CamelCase<lowerCase, Snake_case>() {};
      ╰────
 
   × [ERROR]: case-types
-     ╭─[backend/main.mo:110:19]
- 109 │   class Snake_Cased_ish() {};
- 110 │   class CamelCase<lowerCase, Snake_case>() {};
+     ╭─[backend/main.mo:126:19]
+ 125 │   class Snake_Cased_ish() {};
+ 126 │   class CamelCase<lowerCase, Snake_case>() {};
      ·                   ────┬────
      ·                       ╰── Types should be capitalized and use CamelCase.
- 111 │   class CamelCase<Camel, Case>() {};
+ 127 │   class CamelCase<Camel, Case>() {};
      ╰────
 
   × [ERROR]: case-types
-     ╭─[backend/main.mo:110:30]
- 109 │   class Snake_Cased_ish() {};
- 110 │   class CamelCase<lowerCase, Snake_case>() {};
+     ╭─[backend/main.mo:126:30]
+ 125 │   class Snake_Cased_ish() {};
+ 126 │   class CamelCase<lowerCase, Snake_case>() {};
      ·                              ─────┬────
      ·                                   ╰── Types should be capitalized and use CamelCase.
- 111 │   class CamelCase<Camel, Case>() {};
+ 127 │   class CamelCase<Camel, Case>() {};
      ╰────
 
   × [ERROR]: nesting-limit
-     ╭─[backend/main.mo:122:29]
- 121 │                     if (true) {
- 122 │ ╭─▶                   if (true) {
- 123 │ │                       0
- 124 │ ├─▶                   };
+     ╭─[backend/main.mo:138:29]
+ 137 │                     if (true) {
+ 138 │ ╭─▶                   if (true) {
+ 139 │ │                       0
+ 140 │ ├─▶                   };
      · ╰──── Nesting depth exceeded maximum allowed depth of 9
- 125 │                     };
+ 141 │                     };
      ╰────

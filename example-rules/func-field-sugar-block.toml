@@ -1,0 +1,12 @@
+# Block-body variant of `func-field-sugar` (moc#6184):
+#   `name = func(...) { .. }`  →  `func name(...) { .. }`.
+# Same `!typ_params` type-param safety; `async*`/`async` ride along in return_ty.
+name = "func-field-sugar-block"
+severity = "warning"
+description = "Prefer func-field sugar: `@name = func(...) { .. }` → `func @name(...) { .. }`"
+query = """
+(exp_field
+  (identifier) @name
+  (func_exp !typ_params params: (_) @params return_ty: (typ_annot) @ret body: (block_exp) @body)) @error
+"""
+fix = "func @name@params @ret @body"

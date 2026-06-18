@@ -841,7 +841,7 @@ checksum = "009994f150cc0cd50ff54917d5bc8bffe8cad10ca10d81c34da2ec421ae61782"
 [[package]]
 name = "tree-sitter-motoko"
 version = "0.1.0"
-source = "git+https://github.com/christoph-dfinity/tree-sitter-motoko?rev=9de81ac8acee791b238727dabb6beec0c3a6eb0a#9de81ac8acee791b238727dabb6beec0c3a6eb0a"
+source = "git+https://github.com/caffeinelabs/tree-sitter-motoko?rev=refs%2Fpull%2F12%2Fhead#75440db490d22abf72793fa8e0ba2e4e58b6694b"
 dependencies = [
  "cc",
  "tree-sitter-language",

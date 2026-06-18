@@ -37,6 +37,22 @@ shared (msg) actor class() {
 
   let _ = { field = field };
   let _ = { var dontPun = dontPun };
+
+  // func-fields (moc #6184) — must parse cleanly (no ERROR nodes)
+  let _ = {
+    func incr(x : Nat) : Nat = x + 1;
+    func double(n : Nat) : Nat { n + n };
+    plain = 5;
+  };
+  let _ = { base with func triple(n : Nat) : Nat = n * 3 };
+
+  // verbose lambda-fields — the func-field-sugar rules suggest contractions
+  let _ = {
+    encode = func(x : Nat) : Nat = x * 2;        // plain expr  → func-field-sugar
+    reduce = func(n : Nat) : Nat { n + n };      // block body  → func-field-sugar-block
+    ident = func<T>(x : T) : T = x;              // generic     → func-field-sugar-generic
+    fetch = func() : async* Nat = async* { 0 };  // async*      → func-field-sugar (transparent)
+  };
   let _ = switch _ {
     case (false) {};
     case (true) {};
