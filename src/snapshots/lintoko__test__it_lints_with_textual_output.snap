@@ -70,98 +70,114 @@ backend/main.mo:38:12 Warning: Use field punning to to avoid repetition: Replace
 Found in:
 38   let _ = { field = field };
 
-backend/main.mo:48:10 Error: Don't switch on boolean values, use if instead
+backend/main.mo:51:4 Warning: Prefer func-field sugar: `encode = func(...) = e` → `func encode(...) = e`
 Found in:
-48   let _ = switch _ {
-49     case (false) {};
-50     case (true) {};
-51   };
+51     encode = func(x : Nat) : Nat = x * 2;        // plain expr  → func-field-sugar
 
-backend/main.mo:52:10 Error: Don't switch on boolean values, use if instead
+backend/main.mo:52:4 Warning: Prefer func-field sugar: `reduce = func(...) { .. }` → `func reduce(...) { .. }`
 Found in:
-52   let _ = switch _ {
-53     case true {};
-54     case false {};
-55   };
+52     reduce = func(n : Nat) : Nat { n + n };      // block body  → func-field-sugar-block
 
-backend/main.mo:62:46 Error: Only return primitive types from publicly exposed endpoints
+backend/main.mo:53:4 Warning: Prefer func-field sugar: `ident = func<..>(...) = e` → `func ident<..>(...) = e`
 Found in:
-62   public func listReturningFunction() : async List<Text> {
+53     ident = func<T>(x : T) : T = x;              // generic     → func-field-sugar-generic
 
-backend/main.mo:65:45 Error: Only return primitive types from publicly exposed endpoints
+backend/main.mo:54:4 Warning: Prefer func-field sugar: `fetch = func(...) = e` → `func fetch(...) = e`
 Found in:
-65   public func setReturningFunction() : async Set.Set<Text> {
+54     fetch = func() : async* Nat = async* { 0 };  // async*      → func-field-sugar (transparent)
 
-backend/main.mo:68:45 Error: Only return primitive types from publicly exposed endpoints
+backend/main.mo:56:10 Error: Don't switch on boolean values, use if instead
 Found in:
-68   public func mapReturningFunction() : async Map.Map<Text, Nat> {
+56   let _ = switch _ {
+57     case (false) {};
+58     case (true) {};
+59   };
 
-backend/main.mo:81:4 Warning: unneeded return statement. You can remove the `return`
+backend/main.mo:60:10 Error: Don't switch on boolean values, use if instead
 Found in:
-81     return 10
+60   let _ = switch _ {
+61     case true {};
+62     case false {};
+63   };
 
-backend/main.mo:83:26 Warning: unneeded return statement. You can remove the `return`
+backend/main.mo:70:46 Error: Only return primitive types from publicly exposed endpoints
 Found in:
-83   func unneededReturn() = return 10;
+70   public func listReturningFunction() : async List<Text> {
 
-backend/main.mo:87:6 Warning: unneeded return statement. You can remove the `return`
+backend/main.mo:73:45 Error: Only return primitive types from publicly exposed endpoints
 Found in:
-87       return 4;
+73   public func setReturningFunction() : async Set.Set<Text> {
 
-backend/main.mo:94:14 Warning: unneeded return statement. You can remove the `return`
+backend/main.mo:76:45 Error: Only return primitive types from publicly exposed endpoints
 Found in:
-94     if (true) return 4
+76   public func mapReturningFunction() : async Map.Map<Text, Nat> {
 
-backend/main.mo:103:13 Warning: unneeded return statement. You can remove the `return`
+backend/main.mo:89:4 Warning: unneeded return statement. You can remove the `return`
 Found in:
-103       case 1 return 40;
+89     return 10
 
-backend/main.mo:104:15 Warning: unneeded return statement. You can remove the `return`
+backend/main.mo:91:26 Warning: unneeded return statement. You can remove the `return`
 Found in:
-104       case 2 { return 40; };
+91   func unneededReturn() = return 10;
 
-backend/main.mo:108:7 Error: Types should be capitalized and use CamelCase.
+backend/main.mo:95:6 Warning: unneeded return statement. You can remove the `return`
 Found in:
-108   type lowerCase = Nat;
+95       return 4;
 
-backend/main.mo:109:7 Error: Types should be capitalized and use CamelCase.
+backend/main.mo:102:14 Warning: unneeded return statement. You can remove the `return`
 Found in:
-109   type Snake_case = Nat;
+102     if (true) return 4
 
-backend/main.mo:110:17 Error: Types should be capitalized and use CamelCase.
+backend/main.mo:111:13 Warning: unneeded return statement. You can remove the `return`
 Found in:
-110   type CamelCase<lowerCase, Snake_case> = Nat;
+111       case 1 return 40;
 
-backend/main.mo:110:28 Error: Types should be capitalized and use CamelCase.
+backend/main.mo:112:15 Warning: unneeded return statement. You can remove the `return`
 Found in:
-110   type CamelCase<lowerCase, Snake_case> = Nat;
+112       case 2 { return 40; };
 
-backend/main.mo:113:7 Error: Functions should start lower case and use camelCase.
+backend/main.mo:116:7 Error: Types should be capitalized and use CamelCase.
 Found in:
-113   func UpperCase() {};
+116   type lowerCase = Nat;
 
-backend/main.mo:114:7 Error: Functions should start lower case and use camelCase.
+backend/main.mo:117:7 Error: Types should be capitalized and use CamelCase.
 Found in:
-114   func snake_case() {};
+117   type Snake_case = Nat;
 
-backend/main.mo:116:8 Error: Types should be capitalized and use CamelCase.
+backend/main.mo:118:17 Error: Types should be capitalized and use CamelCase.
 Found in:
-116   class lowerCase() {};
+118   type CamelCase<lowerCase, Snake_case> = Nat;
 
-backend/main.mo:117:8 Error: Types should be capitalized and use CamelCase.
+backend/main.mo:118:28 Error: Types should be capitalized and use CamelCase.
 Found in:
-117   class Snake_Cased_ish() {};
+118   type CamelCase<lowerCase, Snake_case> = Nat;
 
-backend/main.mo:118:18 Error: Types should be capitalized and use CamelCase.
+backend/main.mo:121:7 Error: Functions should start lower case and use camelCase.
 Found in:
-118   class CamelCase<lowerCase, Snake_case>() {};
+121   func UpperCase() {};
 
-backend/main.mo:118:29 Error: Types should be capitalized and use CamelCase.
+backend/main.mo:122:7 Error: Functions should start lower case and use camelCase.
 Found in:
-118   class CamelCase<lowerCase, Snake_case>() {};
+122   func snake_case() {};
 
-backend/main.mo:130:28 Error: Nesting depth exceeded maximum allowed depth of 9
+backend/main.mo:124:8 Error: Types should be capitalized and use CamelCase.
 Found in:
-130                   if (true) {
-131                     0
-132                   };
+124   class lowerCase() {};
+
+backend/main.mo:125:8 Error: Types should be capitalized and use CamelCase.
+Found in:
+125   class Snake_Cased_ish() {};
+
+backend/main.mo:126:18 Error: Types should be capitalized and use CamelCase.
+Found in:
+126   class CamelCase<lowerCase, Snake_case>() {};
+
+backend/main.mo:126:29 Error: Types should be capitalized and use CamelCase.
+Found in:
+126   class CamelCase<lowerCase, Snake_case>() {};
+
+backend/main.mo:138:28 Error: Nesting depth exceeded maximum allowed depth of 9
+Found in:
+138                   if (true) {
+139                     0
+140                   };

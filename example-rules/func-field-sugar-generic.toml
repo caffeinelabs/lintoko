@@ -1,0 +1,15 @@
+# Type-parametric variant of `func-field-sugar` (moc#6184):
+#   `name = func<T>(...) = e`  →  `func name<T>(...) = e`.
+# Captures `typ_params` (@tps) and re-emits it, so the `<T>` is preserved rather
+# than dropped — the type-param-aware counterpart to the `!typ_params`-guarded
+# plain rules. (A block-body generic field is analogous: swap `"=" (_) @rhs`
+# for `body: (block_exp) @body` and drop the `= ` from the fix.)
+name = "func-field-sugar-generic"
+severity = "warning"
+description = "Prefer func-field sugar: `@name = func<..>(...) = e` → `func @name<..>(...) = e`"
+query = """
+(exp_field
+  (identifier) @name
+  (func_exp typ_params: (typ_params) @tps params: (_) @params return_ty: (typ_annot) @ret "=" (_) @rhs)) @error
+"""
+fix = "func @name@tps@params @ret = @rhs"

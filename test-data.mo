@@ -45,6 +45,14 @@ shared (msg) actor class() {
     plain = 5;
   };
   let _ = { base with func triple(n : Nat) : Nat = n * 3 };
+
+  // verbose lambda-fields — the func-field-sugar rules suggest contractions
+  let _ = {
+    encode = func(x : Nat) : Nat = x * 2;        // plain expr  → func-field-sugar
+    reduce = func(n : Nat) : Nat { n + n };      // block body  → func-field-sugar-block
+    ident = func<T>(x : T) : T = x;              // generic     → func-field-sugar-generic
+    fetch = func() : async* Nat = async* { 0 };  // async*      → func-field-sugar (transparent)
+  };
   let _ = switch _ {
     case (false) {};
     case (true) {};

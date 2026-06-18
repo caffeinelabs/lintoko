@@ -1,0 +1,16 @@
+# Example: contract a function-valued record field into the func-field sugar
+# from moc#6184 — `name = func(...) = e`  →  `func name(...) = e`.
+#
+# Plain (non-generic) expression-body form. The `!typ_params` guard makes this
+# type-param-SAFE: a generic field is left for `func-field-sugar-generic` rather
+# than silently dropping its `<T>`. `async`/`async*` ride along in `return_ty` /
+# the rhs, so they need no special handling. Block bodies are a sibling rule.
+name = "func-field-sugar"
+severity = "warning"
+description = "Prefer func-field sugar: `@name = func(...) = e` → `func @name(...) = e`"
+query = """
+(exp_field
+  (identifier) @name
+  (func_exp !typ_params params: (_) @params return_ty: (typ_annot) @ret "=" (_) @rhs)) @error
+"""
+fix = "func @name@params @ret = @rhs"
