@@ -1,3 +1,6 @@
+# Unreleased
+- feat: updates the grammar to parse `and-patterns`, `system-mixins`, and `null-coalescing`
+
 # 0.10.0
 - feat: add per-rule `severity` field (`"warning"` or `"error"`, defaults to `"error"`)
 - feat: add `--severity` CLI flag to override severity for all rules
