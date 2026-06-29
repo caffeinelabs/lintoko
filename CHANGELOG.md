@@ -1,4 +1,4 @@
-# Unreleased
+# 0.11.0
 - feat: updates the grammar to parse `and-patterns`, `system-mixins`, and `null-coalescing`
 
 # 0.10.0
