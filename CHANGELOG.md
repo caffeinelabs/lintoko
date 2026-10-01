@@ -1,3 +1,6 @@
+# Unreleased
+- fix: `includes` / `excludes` globs match absolute paths under the working directory as if they were relative, so path-scoped rules work under `mops lint`, which passes absolute paths: `includes` rules like `types-only` now fire, and `excludes` allowlists like `allowed-directories` no longer flag every file
+
 # 0.12.0
 - feat: updates the grammar to [tree-sitter-motoko v0.2.2](https://github.com/caffeinelabs/tree-sitter-motoko/releases/tag/v0.2.2), which parses the moc 2.0 syntax (up to 2.0.0-beta.4) alongside the existing moc 1.x syntax: unparenthesized `if`/`while`/`for`/`switch` heads, lighter `case`s, `and`/`or` in conditions, `do { }` operands, `5.toText()`, `<system, T>`
 - fix: unspaced `x-1` / `x+1` now parse as binary expressions instead of calls, so rules matching `bin_exp_*` see them (e.g. the `assign-minus` / `assign-plus` example rules)

@@ -5,6 +5,7 @@ use glob::Pattern;
 use miette::{LabeledSpan, NamedSource, Severity, miette};
 use regex::Regex;
 use serde::{Deserialize, Deserializer};
+use std::borrow::Cow;
 use std::collections::HashSet;
 use std::{fs, io::Write, path::Path};
 use tracing::debug;
@@ -63,6 +64,19 @@ impl Rule {
         let matches_any = |pats: &[Pattern]| pats.iter().any(|p| p.matches(path));
         (self.includes.is_empty() || matches_any(&self.includes)) && !matches_any(&self.excludes)
     }
+}
+
+/// The path `includes`/`excludes` globs match against. Callers like `mops lint` pass absolute paths,
+/// so those under `cwd` are made relative (with `/` separators) to match the same globs as relative inputs.
+fn path_for_filters<'a>(path: &'a str, cwd: Option<&Path>) -> Cow<'a, str> {
+    let p = Path::new(path);
+    if p.is_absolute()
+        && let Some(rel) = cwd.and_then(|cwd| p.strip_prefix(cwd).ok())
+    {
+        let segments: Vec<_> = rel.iter().map(|s| s.to_string_lossy()).collect();
+        return Cow::Owned(segments.join("/"));
+    }
+    Cow::Borrowed(path)
 }
 
 #[derive(Debug, Clone)]
@@ -260,8 +274,9 @@ pub fn lint_file(
         .expect("Error loading Motoko grammar");
     let tree = parser.parse(input.as_bytes(), None).unwrap();
     let mut diagnostics = Vec::new();
+    let filter_path = path_for_filters(path, std::env::current_dir().ok().as_deref());
     for rule in rules {
-        if !rule.applies_to(path) {
+        if !rule.applies_to(&filter_path) {
             continue;
         }
         diagnostics.extend(apply_rule(rule, tree.root_node(), input)?);
@@ -426,6 +441,23 @@ mod test {
     }
 
     #[test]
+    fn path_for_filters_strips_cwd_from_absolute_paths() {
+        let strip = |p: &str| path_for_filters(p, Some(Path::new("/proj"))).into_owned();
+        assert_eq!(strip("/proj/backend/types/Foo.mo"), "backend/types/Foo.mo");
+        assert_eq!(
+            strip("/other/backend/types/Foo.mo"),
+            "/other/backend/types/Foo.mo"
+        );
+        // The prefix is matched per path component, not per character.
+        assert_eq!(strip("/project/backend/Foo.mo"), "/project/backend/Foo.mo");
+        assert_eq!(strip("backend/types/Foo.mo"), "backend/types/Foo.mo");
+        assert_eq!(
+            path_for_filters("/proj/backend/Foo.mo", None),
+            "/proj/backend/Foo.mo"
+        );
+    }
+
+    #[test]
     fn invalid_glob_pattern_fails_at_parse() {
         let toml_src = r#"
 name = "bad"
@@ -486,6 +518,29 @@ includes = ["[unterminated"]
 
         let only_types = "module { public type T = Nat };";
         assert_errors(&rule, only_types, "backend/types/foo.mo", 0);
+    }
+
+    #[test]
+    fn filters_match_absolute_paths_under_cwd() {
+        let cwd = std::env::current_dir().unwrap();
+        let in_cwd = |rel: &str| cwd.join(rel).to_str().unwrap().to_string();
+        let outside = |rel: &str| {
+            let elsewhere = cwd.parent().unwrap().join("elsewhere");
+            elsewhere.join(rel).to_str().unwrap().to_string()
+        };
+
+        let types_only = load_rule_from_file(Path::new("example-rules/types-only.toml")).unwrap();
+        let mixed_src = "module { public type T = Nat; public func f() {} };";
+        assert_errors(&types_only, mixed_src, &in_cwd("backend/types/foo.mo"), 1);
+        assert_errors(&types_only, mixed_src, &in_cwd("backend/lib/foo.mo"), 0);
+        assert_errors(&types_only, mixed_src, &outside("backend/types/foo.mo"), 0);
+
+        let allowed_dirs =
+            load_rule_from_file(Path::new("example-rules/allowed-directories.toml")).unwrap();
+        let src = "actor { };";
+        assert_errors(&allowed_dirs, src, &in_cwd("backend/lib/foo.mo"), 0);
+        assert_errors(&allowed_dirs, src, &in_cwd("src/foo.mo"), 1);
+        assert_errors(&allowed_dirs, src, &outside("backend/lib/foo.mo"), 1);
     }
 
     #[test]

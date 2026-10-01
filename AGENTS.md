@@ -11,7 +11,7 @@ lintoko sees syntax only: it never type-checks, and leaves anything the compiler
 - [mops](https://github.com/caffeinelabs/mops) — the Motoko package manager, and the usual way lintoko runs ([`mops lint` docs](https://docs.mops.one/cli/mops-lint)):
   - `[toolchain] lintoko` in `mops.toml` takes a version, which mops downloads from this repo's GitHub releases, or a file path. Point it at `target/debug/lintoko` to try a local build in a real project.
   - `mops lint` runs lintoko from the project root with one `--rules` flag per rule directory: `lint/` or `lints/` (or `[lint] rules`), plus the `rules/` directory of each dependency named in `[lint] extends` (all of them with `extends = true`). `[lint.extra]` runs lintoko again with more rule directories on files matching a glob.
-  - `mops lint` passes files as absolute paths. `includes`/`excludes` globs match the whole path string exactly as lintoko receives it, so a relative pattern like `backend/types/**` matches when lintoko is run by hand but never under `mops lint`.
+  - `mops lint` passes files as absolute paths. Before matching `includes`/`excludes` globs, lintoko strips its working directory (the project root) from absolute paths, so a pattern like `backend/types/**` matches the same under `mops lint` as when lintoko is run by hand on `backend/types/foo.mo`. Diagnostics still print the path as passed.
   - `mops check` runs the lint step after type-checking whenever lintoko is pinned.
 
 ## Build, test, lint, format
