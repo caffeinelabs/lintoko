@@ -37,7 +37,7 @@ excludes = ["**/*.test.mo"]          # optional
 
 ### Path filtering (`includes` / `excludes`)
 
-Globs match the file path relative to the directory lintoko runs in, which `mops lint` sets to the project root. An absolute path under that directory is made relative (with `/` separators) before matching, so `mops lint`, which passes absolute paths, matches the same globs as `lintoko backend/types/foo.mo` run by hand. Relative paths, and absolute paths outside that directory, are matched as given. Patterns are anchored to the full path; use `**` to match any number of segments.
+Globs match the file path relative to the directory lintoko runs in (which `mops lint` sets to the project root), with `/` separators and any `./` segments dropped. So `mops lint`, which passes absolute paths, `lintoko backend/types/foo.mo` and `lintoko ./backend/types/foo.mo` all match `backend/types/**`. Absolute paths outside that directory are matched as given. Patterns are anchored to the full path; use `**` to match any number of segments.
 
 - Scope a rule to a directory: `includes = ["backend/types/**"]`
 - Enforce a directory layout: pair `query = "(source_file) @error"` with `excludes = [...permitted paths...]` so the rule fires on every file *outside* the allowlist.

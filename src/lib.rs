@@ -7,7 +7,8 @@ use regex::Regex;
 use serde::{Deserialize, Deserializer};
 use std::borrow::Cow;
 use std::collections::HashSet;
-use std::{fs, io::Write, path::Path};
+use std::path::{Component, Path};
+use std::{fs, io::Write};
 use tracing::debug;
 use tree_sitter::{Node, Parser, Query, QueryCapture, QueryCursor, Range, StreamingIterator};
 
@@ -66,17 +67,25 @@ impl Rule {
     }
 }
 
-/// The path `includes`/`excludes` globs match against. Callers like `mops lint` pass absolute paths,
-/// so those under `cwd` are made relative (with `/` separators) to match the same globs as relative inputs.
+/// The path `includes`/`excludes` globs match against: relative to `cwd`, with `/` separators and no `./` segments,
+/// so `mops lint`'s absolute paths and `./backend/foo.mo` match the same globs as `backend/foo.mo`.
+/// Absolute paths outside `cwd` are matched as given.
 fn path_for_filters<'a>(path: &'a str, cwd: Option<&Path>) -> Cow<'a, str> {
     let p = Path::new(path);
-    if p.is_absolute()
-        && let Some(rel) = cwd.and_then(|cwd| p.strip_prefix(cwd).ok())
-    {
-        let segments: Vec<_> = rel.iter().map(|s| s.to_string_lossy()).collect();
-        return Cow::Owned(segments.join("/"));
-    }
-    Cow::Borrowed(path)
+    let rel = if p.is_absolute() {
+        let Some(rel) = cwd.and_then(|cwd| p.strip_prefix(cwd).ok()) else {
+            return Cow::Borrowed(path);
+        };
+        rel
+    } else {
+        p
+    };
+    let segments: Vec<_> = rel
+        .components()
+        .filter(|c| *c != Component::CurDir)
+        .map(|c| c.as_os_str().to_string_lossy())
+        .collect();
+    Cow::Owned(segments.join("/"))
 }
 
 #[derive(Debug, Clone)]
@@ -451,6 +460,9 @@ mod test {
         // The prefix is matched per path component, not per character.
         assert_eq!(strip("/project/backend/Foo.mo"), "/project/backend/Foo.mo");
         assert_eq!(strip("backend/types/Foo.mo"), "backend/types/Foo.mo");
+        assert_eq!(strip("./backend/types/Foo.mo"), "backend/types/Foo.mo");
+        assert_eq!(strip("backend/./types/Foo.mo"), "backend/types/Foo.mo");
+        assert_eq!(strip("/proj/./backend/Foo.mo"), "backend/Foo.mo");
         assert_eq!(
             path_for_filters("/proj/backend/Foo.mo", None),
             "/proj/backend/Foo.mo"
@@ -504,6 +516,8 @@ includes = ["[unterminated"]
             ("src/foo.mo", 1),
             ("backend/other/foo.mo", 1),
             ("backend/main2.mo", 1),
+            ("./backend/lib/foo.mo", 0),
+            ("./src/foo.mo", 1),
         ] {
             assert_errors(&rule, src, path, expected);
         }
@@ -515,6 +529,7 @@ includes = ["[unterminated"]
         let mixed_src = "module { public type T = Nat; public func f() {} };";
         assert_errors(&rule, mixed_src, "backend/types/foo.mo", 1);
         assert_errors(&rule, mixed_src, "backend/lib/foo.mo", 0);
+        assert_errors(&rule, mixed_src, "./backend/types/foo.mo", 1);
 
         let only_types = "module { public type T = Nat };";
         assert_errors(&rule, only_types, "backend/types/foo.mo", 0);
