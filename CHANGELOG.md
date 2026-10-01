@@ -1,6 +1,6 @@
 # 0.12.0
 - feat: updates the grammar to [tree-sitter-motoko v0.2.2](https://github.com/caffeinelabs/tree-sitter-motoko/releases/tag/v0.2.2), which parses the moc 2.0 syntax (up to 2.0.0-beta.4) alongside the existing moc 1.x syntax: unparenthesized `if`/`while`/`for`/`switch` heads, lighter `case`s, `and`/`or` in conditions, `do { }` operands, `5.toText()`, `<system, T>`
-- fix: `x := x-1` and `x := x+1` without spaces are now caught by `assign-minus` / `assign-plus`
+- fix: unspaced `x-1` / `x+1` now parse as binary expressions instead of calls, so rules matching `bin_exp_*` see them (e.g. the `assign-minus` / `assign-plus` example rules)
 - breaking (custom rules): number literals no longer carry a sign (`-1` is `(unop_exp (unop) (lit_exp (int_literal)))`), `unop_pat` sits at the unary pattern level, and `await? e` is its own `awaitquest_exp` node. Rules that match parenthesized `switch` scrutinees or `case (?_)` need extra patterns for the bare forms
 
 # 0.11.0
