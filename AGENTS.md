@@ -41,7 +41,7 @@ These also work directly with `cargo` if `just` is unavailable. To iterate on on
 - `src/lib.rs` — rule loading, query matching, diagnostics and `--fix`; `src/main.rs` — CLI and input expansion.
 - `src/custom_predicates.rs` — the `@trailing` and `@filter` captures and lintoko's own predicates, `#ancestor-depth?` and `#subtree-depth?` (see `example-rules/nesting-limit.toml`).
 - `src/snapshots/` — insta snapshots; regenerate with `just test-accept`, never hand-edit.
-- `example-rules/` — example TOML rules, and test input. The snapshot tests run all of them against `test-data.mo` (linted as `backend/main.mo`), and unit tests in `lib.rs` load some by file name, so renaming or changing a rule breaks tests.
+- `example-rules/` — example TOML rules. The snapshot tests run all of them against `test-data.mo` (at the repo root, linted as `backend/main.mo`), and unit tests in `lib.rs` load some by file name, so renaming or changing a rule breaks tests.
 - `.agents/skills/lintoko/SKILL.md` — the rule-authoring reference (TOML fields, special captures, query patterns, pitfalls), shipped as an agent skill. Read it before writing or reviewing rules, and update it in the same PR when the rule format, captures, predicates or CLI flags change.
 
 ## Bumping the grammar
